@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TorBox API Client</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header__content">
+            <h1 class="header__title">TorBox API Client</h1>
+            <div class="header__auth">
+                <div class="form-group">
+                    <label for="apiKey" class="form-label">API Key</label>
+                    <div class="api-key-input">
+                        <input type="password" id="apiKey" class="form-control" placeholder="Enter your TorBox API key">
+                        <button id="testConnection" class="btn btn--primary btn--sm">Test</button>
+                    </div>
+                </div>
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status status--info">Not Connected</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <ul class="sidebar__menu">
+                <li class="sidebar__item">
+                    <button class="sidebar__link active" data-view="dashboard">
+                        📊 Dashboard
+                    </button>
+                </li>
+                <li class="sidebar__item">
+                    <button class="sidebar__link" data-view="torrents">
+                        🌪️ Torrents
+                    </button>
+                </li>
+                <li class="sidebar__item">
+                    <button class="sidebar__link" data-view="webdownloads">
+                        🌐 Web Downloads
+                    </button>
+                </li>
+                <li class="sidebar__item">
+                    <button class="sidebar__link" data-view="usenet">
+                        📡 Usenet
+                    </button>
+                </li>
+                <li class="sidebar__item">
+                    <button class="sidebar__link" data-view="profile">
+                        👤 Profile
+                    </button>
+                </li>
+                <li class="sidebar__item">
+                    <button class="sidebar__link" data-view="status">
+                        ⚡ Service Status
+                    </button>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+            <!-- Dashboard View -->
+            <div id="dashboard" class="view active">
+                <div class="view__header">
+                    <h2>Dashboard</h2>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>Welcome to TorBox</h3>
+                            <p>Connect your API key to start managing your torrents and downloads.</p>
+                        </div>
+                    </div>
+                    <div class="card" id="quickStats" style="display: none;">
+                        <div class="card__body">
+                            <h3>Quick Stats</h3>
+                            <div class="stats-grid" id="statsContent">
+                                <!-- Stats will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Torrents View -->
+            <div id="torrents" class="view">
+                <div class="view__header">
+                    <h2>Torrents</h2>
+                    <div class="view__actions">
+                        <button class="btn btn--primary" id="addTorrentBtn">➕ Add Torrent</button>
+                        <button class="btn btn--secondary" id="refreshTorrents">🔄 Refresh</button>
+                    </div>
+                </div>
+                
+                <!-- Add Torrent Form -->
+                <div class="card" id="addTorrentForm" style="display: none;">
+                    <div class="card__body">
+                        <h3>Add New Torrent</h3>
+                        <form id="torrentForm">
+                            <div class="form-group">
+                                <label for="magnetLink" class="form-label">Magnet Link</label>
+                                <input type="text" id="magnetLink" class="form-control" placeholder="magnet:?xt=urn:btih:...">
+                            </div>
+                            <div class="form-group">
+                                <label for="torrentName" class="form-label">Name (optional)</label>
+                                <input type="text" id="torrentName" class="form-control" placeholder="Custom name">
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="seedTorrent"> Seed after download
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="allowZip"> Allow ZIP compression
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn--primary">Add Torrent</button>
+                                <button type="button" class="btn btn--secondary" id="cancelAddTorrent">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Torrents List -->
+                <div class="card">
+                    <div class="card__body">
+                        <div class="table-container" id="torrentsTableContainer">
+                            <div class="loading-state">Connect your API key to view torrents</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Web Downloads View -->
+            <div id="webdownloads" class="view">
+                <div class="view__header">
+                    <h2>Web Downloads</h2>
+                    <div class="view__actions">
+                        <button class="btn btn--primary" id="addWebDlBtn">➕ Add Download</button>
+                        <button class="btn btn--secondary" id="refreshWebDl">🔄 Refresh</button>
+                    </div>
+                </div>
+                
+                <!-- Add Web Download Form -->
+                <div class="card" id="addWebDlForm" style="display: none;">
+                    <div class="card__body">
+                        <h3>Add Web Download</h3>
+                        <form id="webDlForm">
+                            <div class="form-group">
+                                <label for="webDlUrl" class="form-label">URL</label>
+                                <input type="url" id="webDlUrl" class="form-control" placeholder="https://example.com/file.zip" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="webDlName" class="form-label">Name (optional)</label>
+                                <input type="text" id="webDlName" class="form-control" placeholder="Custom filename">
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn--primary">Add Download</button>
+                                <button type="button" class="btn btn--secondary" id="cancelAddWebDl">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Web Downloads List -->
+                <div class="card">
+                    <div class="card__body">
+                        <div class="table-container" id="webDlTableContainer">
+                            <div class="loading-state">Connect your API key to view web downloads</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usenet View -->
+            <div id="usenet" class="view">
+                <div class="view__header">
+                    <h2>Usenet Downloads</h2>
+                    <div class="view__actions">
+                        <button class="btn btn--primary" id="addUsenetBtn">➕ Add Download</button>
+                        <button class="btn btn--secondary" id="refreshUsenet">🔄 Refresh</button>
+                    </div>
+                </div>
+                
+                <!-- Add Usenet Download Form -->
+                <div class="card" id="addUsenetForm" style="display: none;">
+                    <div class="card__body">
+                        <h3>Add Usenet Download</h3>
+                        <form id="usenetForm">
+                            <div class="form-group">
+                                <label for="usenetUrl" class="form-label">NZB URL</label>
+                                <input type="url" id="usenetUrl" class="form-control" placeholder="https://example.com/file.nzb" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="usenetName" class="form-label">Name (optional)</label>
+                                <input type="text" id="usenetName" class="form-control" placeholder="Custom filename">
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn--primary">Add Download</button>
+                                <button type="button" class="btn btn--secondary" id="cancelAddUsenet">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Usenet Downloads List -->
+                <div class="card">
+                    <div class="card__body">
+                        <div class="table-container" id="usenetTableContainer">
+                            <div class="loading-state">Connect your API key to view usenet downloads</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile View -->
+            <div id="profile" class="view">
+                <div class="view__header">
+                    <h2>User Profile</h2>
+                    <div class="view__actions">
+                        <button class="btn btn--secondary" id="refreshProfile">🔄 Refresh</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card__body">
+                        <div id="profileContent">
+                            <div class="loading-state">Connect your API key to view profile information</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Status View -->
+            <div id="status" class="view">
+                <div class="view__header">
+                    <h2>Service Status</h2>
+                    <div class="view__actions">
+                        <button class="btn btn--secondary" id="refreshStatus">🔄 Refresh</button>
+                    </div>
+                </div>
+                
+                <div class="status-grid">
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>Service Uptime</h3>
+                            <div id="uptimeContent">
+                                <div class="loading-state">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>Service Statistics</h3>
+                            <div id="serviceStatsContent">
+                                <div class="loading-state">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner">⏳ Loading...</div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
